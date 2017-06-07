@@ -1,0 +1,9 @@
+[submodule "toft"]
+	path = toft
+	url = https://github.com/chen3feng/toft.git
+[submodule "thirdparty"]
+	path = thirdparty
+	url = https://github.com/chen3feng/thirdparty.git
+[submodule "typhoon-blade"]
+	path = typhoon-blade
+	url = https://github.com/chen3feng/typhoon-blade.git

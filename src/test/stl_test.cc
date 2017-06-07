@@ -3,15 +3,19 @@
 // Description: Stl library test bench
 
 #include <gtest/gtest.h>
+#include <glog/logging.h>
 
 #include <iostream>
 #include <ctime>
 #include <vector>
 #include <map>
 #include <set>
+#include <unordered_set>
+#include <list>
 #include <unordered_map>
 #include <iterator>
 #include <algorithm>
+#include <ctime>
 
 class StlTestBench: public ::testing::Test {
   public:
@@ -26,38 +30,121 @@ class StlTestBench: public ::testing::Test {
     std::unordered_map<uint64_t, std::set<uint64_t>> test_unordered_map_;
 };
 
+typedef struct test_struct {
+  int64_t a;
+  static int64_t b;
+} test_struct;
+int64_t test_struct::b = 2;
+
 TEST_F(StlTestBench, OtherTest) {
 }
 
+bool Compare1(const int& a, const int& b) {
+  return (a > b);
+}
+
+bool Compare2(const int& a, const int& b) {
+  return (a < b);
+}
+
+TEST_F(StlTestBench, ListTest) {
+  std::list<int> l1 = {2,1,3};
+  std::list<int> l2 = {2,1,3};
+  ASSERT_EQ(l1, l2);
+  std::copy(l1.begin(),l1.end(), std::ostream_iterator<int>(std::cout, " "));
+  std::cout << std::endl;
+  l1.sort(Compare1);
+  std::copy(l1.begin(),l1.end(), std::ostream_iterator<int>(std::cout, " "));
+  std::cout << std::endl;
+  for (auto it = l1.begin();
+      it != l1.end();) {
+    auto it_temp = it;
+    l1.erase(it_temp++);
+    it = it_temp;
+  }
+  ASSERT_EQ(true, l1.empty());
+}
+
+TEST_F(StlTestBench, TimeTest) {
+  return;
+  std::list<int> l1;
+  std::vector<int> v1;
+  for (int i = 0; i < 10000; i++) {
+    l1.push_back(i);
+    v1.push_back(i);
+  }
+  int times = 10000;
+  clock_t time_list = clock();
+  for (int i = 0; i < times; i++) {
+    l1.sort(Compare1);
+    l1.sort(Compare2);
+    //l1.size();
+  }
+  time_list = clock() - time_list;
+  std::cout << "list: " << (double)time_list/CLOCKS_PER_SEC << std::endl;
+  clock_t time_vector = clock();
+  for (int i = 0; i < times; i++) {
+    std::stable_sort(v1.begin(),v1.end(), Compare1);
+    std::stable_sort(v1.begin(),v1.end(), Compare2);
+    //v1.size();
+  }
+  time_vector = clock() - time_vector;
+  std::cout << "vector: " << (double)time_vector/CLOCKS_PER_SEC << std::endl;
+}
+
 TEST_F(StlTestBench, SetTest) {
-  std::set<int> a = {1 ,2, 3};
+  std::set<int> a = {3 ,2, 1};
+  for (auto it = a.begin(); it != a.end(); ++it) {
+    LOG(ERROR) << *it;
+  }
+
+  LOG(ERROR) << sizeof(a);
+  LOG(ERROR) << sizeof(int);
+  LOG(ERROR) << sizeof(int *);
+  struct test_struct test_a;
+  struct test_struct test_b;
+  LOG(ERROR) << sizeof(test_a);
+  LOG(ERROR) << sizeof(test_b);
+  LOG(ERROR) << test_a.b;
+  LOG(ERROR) << test_b.b;
   std::set<int> b = {};
+  LOG(ERROR) << sizeof(b);
   std::set<int> c = {4};
   a.insert(b.begin(), b.end());
   ASSERT_EQ(std::set<int>({1,2,3}), a);
+  LOG(ERROR) << sizeof(a);
   a.insert(c.begin(), c.end());
   ASSERT_EQ(std::set<int>({1,2,3,4}), a);
+  LOG(ERROR) << sizeof(a);
 }
 
 TEST_F(StlTestBench, VectorTest) {
   using namespace std;
   vector<int> vec;
+  LOG(ERROR) << sizeof(vec);
   int i;
-  cout << "vector size = " << vec.size() << endl;
+  ASSERT_EQ(0, vec.size());
   for (i = 0; i < 5; i++) {
     vec.push_back(i);
   }
-  cout << "extended vector size = " << vec.size() << endl;
+  ASSERT_EQ(5, vec.size());
   for (i = 0; i < 5; i++) {
-    cout << "value of vec[" << i <<"] = " << vec[i] << endl;
+    ASSERT_EQ(i, vec[i]);
   }
-  cout << "value of vec.back() = " << vec.back() << endl;
-  cout << "value of vec.back() = " << vec.back() << endl;
+  ASSERT_EQ(4, vec.back());
+  ASSERT_EQ(4, vec.back());
   vector<int>::iterator v = vec.begin();
   while (v != vec.end()) {
-    cout << "value of v = " << *v << endl;
+    ASSERT_EQ(v - vec.begin(), *v);
     v++;
   }
+}
+
+TEST_F(StlTestBench, Reference) {
+  std::vector<int> a;
+  std::vector<int>& b = a;
+  b.push_back(101);
+  ASSERT_EQ(101, a[0]);
 }
 
 TEST_F(StlTestBench, UnorderedMapTest) {
