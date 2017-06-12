@@ -123,11 +123,11 @@ TEST_F(StlTestBench, VectorTest) {
   vector<int> vec;
   LOG(ERROR) << sizeof(vec);
   int i;
-  ASSERT_EQ(0, vec.size());
+  ASSERT_EQ((size_t)0, vec.size());
   for (i = 0; i < 5; i++) {
     vec.push_back(i);
   }
-  ASSERT_EQ(5, vec.size());
+  ASSERT_EQ((size_t)5, vec.size());
   for (i = 0; i < 5; i++) {
     ASSERT_EQ(i, vec[i]);
   }
