@@ -69,6 +69,8 @@ TEST_F(StlTestBench, TimeTest) {
   return;
   std::list<int> l1;
   std::vector<int> v1;
+  v1.clear();
+  v1.reserve(0);
   for (int i = 0; i < 10000; i++) {
     l1.push_back(i);
     v1.push_back(i);
@@ -97,7 +99,6 @@ TEST_F(StlTestBench, SetTest) {
   for (auto it = a.begin(); it != a.end(); ++it) {
     LOG(ERROR) << *it;
   }
-
   LOG(ERROR) << sizeof(a);
   LOG(ERROR) << sizeof(int);
   LOG(ERROR) << sizeof(int *);
@@ -119,15 +120,16 @@ TEST_F(StlTestBench, SetTest) {
 }
 
 TEST_F(StlTestBench, VectorTest) {
+  ASSERT_EQ(temp2, temp);
   using namespace std;
   vector<int> vec;
   LOG(ERROR) << sizeof(vec);
   int i;
-  ASSERT_EQ((size_t)0, vec.size());
+  ASSERT_EQ(0, vec.size());
   for (i = 0; i < 5; i++) {
     vec.push_back(i);
   }
-  ASSERT_EQ((size_t)5, vec.size());
+  ASSERT_EQ(5, vec.size());
   for (i = 0; i < 5; i++) {
     ASSERT_EQ(i, vec[i]);
   }
@@ -138,6 +140,18 @@ TEST_F(StlTestBench, VectorTest) {
     ASSERT_EQ(v - vec.begin(), *v);
     v++;
   }
+  vector<int> v1 = {1,2,3};
+  vector<int> v2 = {2,3,4};
+  vector<int> v3;
+  v3.reserve(v1.size() + v2.size());
+  v3.insert(v3.end(), v1.begin(), v1.end());
+  v3.insert(v3.end(), v2.begin(), v2.end());
+  ASSERT_EQ(6, v3.size());
+}
+
+TEST_F(StlTestBench, VectorTest2) {
+  std::vector<int> vec = {1,2,3};
+  EXPECT_EQ(vec.begin() + 3, vec.end());
 }
 
 TEST_F(StlTestBench, Reference) {
@@ -184,8 +198,12 @@ TEST_F(StlTestBench, MapTest) {
   }
   std::map<uint64_t, std::set<uint64_t>> test_tmp;
   test_tmp[1] = {};
+  test_tmp[2] = {};
+  test_tmp[3] = {};
   for (auto it = test_tmp.begin(); it != test_tmp.end(); ++it) {
-    std::cout << it->first << std::endl;
+    const auto& a = it->first;
+    LOG(ERROR) << a;
+    //std::cout << it->first << std::endl;
   }
 }
 
@@ -236,4 +254,24 @@ TEST_F(StlTestBench, SetWithVectorTest) {
       it_list != tag_list_set.end(); ++it_list) {
     std::cout << ((*it_list)[0]) << ":" << ((*it_list)[1]) << std::endl;
   }
+}
+
+struct A {
+  std::string a_;
+  int b_;
+};
+
+TEST_F(StlTestBench, Struct) {
+  std::vector<A> a_list;
+  a_list.clear();
+  a_list.resize(3);
+  ASSERT_EQ(0, a_list[0].b_);
+}
+
+TEST_F(StlTestBench, Uint) {
+  uint32_t i = 0;
+  i -= 1;
+  ASSERT_EQ(0xffffffff, i);
+  i += 2;
+  ASSERT_EQ(1, i);
 }

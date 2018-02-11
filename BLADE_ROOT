@@ -1,5 +1,9 @@
 # Configuration
 
+cc_config(
+    cppflags = ['-std=c++11'],
+)
+
 cc_test_config(
     dynamic_link=False,
     heap_check='strict',
