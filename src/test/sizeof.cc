@@ -27,6 +27,11 @@ struct a4 {
 };
 
 TEST(TestSizeOf, Struct) {
+  uint64_t a = 0;
+  a -= 100;
+  std::cout << "0x" << std::hex << a << std::endl;
+  a += 105;
+  std::cout << "0x" << std::hex << a << std::endl;
   EXPECT_EQ(sizeof(a1), 24);
   EXPECT_EQ(sizeof(a2), 8);
   EXPECT_EQ(sizeof(a3), 8);

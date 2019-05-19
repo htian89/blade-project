@@ -18,7 +18,13 @@ class StringTB: public ::testing::Test {
   std::string test_str_;
 };
 
+TEST_F(StringTB, Md5) {
+
+}
+
 TEST_F(StringTB, EraseLastSpace) {
+  std::string test_str1 = "你好大哥大姐";
+  std::cout << test_str1.length() << std::endl;
   test_str_ = "Hello World ";
   test_str_.erase(test_str_.find_last_not_of(" ") + 1);
   if (true)
@@ -26,6 +32,13 @@ TEST_F(StringTB, EraseLastSpace) {
     ASSERT_EQ("Hello World", test_str_);
 
   ASSERT_EQ(true, Less());
+}
+
+TEST_F(StringTB, IndexOf) {
+  std::string test_str1 = "test,test";
+  ASSERT_NE(std::string::npos, test_str1.find(','));
+  std::string test_str2 = "testtest";
+  ASSERT_EQ(std::string::npos, test_str2.find(','));
 }
 
 TEST_F(StringTB, Other) {

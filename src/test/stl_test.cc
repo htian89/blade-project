@@ -120,7 +120,6 @@ TEST_F(StlTestBench, SetTest) {
 }
 
 TEST_F(StlTestBench, VectorTest) {
-  ASSERT_EQ(temp2, temp);
   using namespace std;
   vector<int> vec;
   LOG(ERROR) << sizeof(vec);
@@ -147,6 +146,23 @@ TEST_F(StlTestBench, VectorTest) {
   v3.insert(v3.end(), v1.begin(), v1.end());
   v3.insert(v3.end(), v2.begin(), v2.end());
   ASSERT_EQ(6, v3.size());
+
+  vector<int> v4;
+  v4.insert(v4.end(), v1.begin(), v1.begin());
+  ASSERT_EQ(0, v4.size());
+  v4.clear();
+  v4.insert(v4.end(), v1.begin(), v1.begin()+1);
+  ASSERT_EQ(1, v4.size());
+  vector<int> v5_cap;
+  ASSERT_EQ(0, v5_cap.capacity());
+  v5_cap.resize(10);
+  ASSERT_EQ(10, v5_cap.capacity());
+  v5_cap.clear();
+  ASSERT_EQ(10, v5_cap.capacity());
+  v5_cap.reserve(100);
+  v5_cap.clear();
+  v5_cap.reserve(10);
+  ASSERT_EQ(100, v5_cap.capacity());
 }
 
 TEST_F(StlTestBench, VectorTest2) {

@@ -1,0 +1,9 @@
+package MyPb;
+
+message Data {
+  optional int64 a = 1;
+}
+
+message Message {
+  repeated Data datas = 1;
+}

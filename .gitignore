@@ -8,3 +8,4 @@ build64_release/
 build64_debug/
 tags
 SConstruct
+.vscode

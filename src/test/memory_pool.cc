@@ -12,30 +12,34 @@ template <typename T>
 class MemoryPool {
   typedef T value_type;
  public:
-  MemoryPool(size_t block_size) {
+  MemoryPool(size_t block_size) : pool_size_(block_size) {
+    all_blocks_.reserve(block_size);
     for (size_t i = 0; i < block_size; i++) {
-      free_blocks_.push(new value_type);
+      all_blocks_.push_back(new value_type);
     }
   }
   ~MemoryPool() {
-    while (!free_blocks_.empty()) {
-      delete free_blocks_.front();
-      free_blocks_.pop();
+    while (!all_blocks_.empty()) {
+      delete all_blocks_.back();
+      all_blocks_.pop_back();
     }
+  }
+  void Init() {
+    counter_ = 0;
   }
   value_type* Alloc() {
-    if (free_blocks_.empty()) {
+    if (counter_ >= pool_size_) {
       return NULL;
     }
-    value_type* ret = free_blocks_.front();
-    free_blocks_.pop();
-    return ret;
-  }
-  void DeAlloc(value_type* p) {
-    free_blocks_.push(p);
+    return all_blocks_[counter_++];
+    //value_type* ret = free_blocks_.back();
+    //free_blocks_.pop_back();
+    //return ret;
   }
  protected:
-  std::queue<value_type*> free_blocks_;
+  std::vector<value_type*> all_blocks_;
+  size_t pool_size_ = 0;
+  size_t counter_ = 0;
 };
 
 template <typename T>
@@ -44,14 +48,17 @@ class MemoryPool2 {
  public:
   MemoryPool2(size_t block_size) {
     for (size_t i = 0; i < block_size; i++) {
-      free_blocks_.push(new value_type);
+      all_blocks_.push(new value_type);
     }
   }
   ~MemoryPool2() {
-    while (!free_blocks_.empty()) {
-      delete free_blocks_.top();
-      free_blocks_.pop();
+    while (!all_blocks_.empty()) {
+      delete all_blocks_.top();
+      all_blocks_.pop();
     }
+  }
+  void Init() {
+    free_blocks_ = all_blocks_;
   }
   value_type* Alloc() {
     if (free_blocks_.empty()) {
@@ -61,49 +68,43 @@ class MemoryPool2 {
     free_blocks_.pop();
     return ret;
   }
-  void DeAlloc(value_type* p) {
-    free_blocks_.push(p);
-  }
  protected:
   std::stack<value_type*> free_blocks_;
+  std::stack<value_type*> all_blocks_;
 };
 
 struct A {
   void Clear() {
     a = {0};
   }
-  int a[100];
+  std::array<int, 100> a {{0}};
 };
 
 TEST(TEST, MemoryPoolTest) {
   MemoryPool<struct A> pool(200000);
-  std::vector<struct A*> vec;
-  vec.reserve(200000);
+  struct A* p = nullptr;
   int t = 0;
   t -= ::toft::GetTimeStampInUs();
+  pool.Init();
   for (int i = 200000; i > 0; --i) {
-    vec.push_back(pool.Alloc());
-  }
-  for (auto it = vec.begin(); it != vec.end(); ++it) {
-    pool.DeAlloc(*it);
+    p = pool.Alloc();
   }
   t += ::toft::GetTimeStampInUs();
-  LOG(ERROR) << "total cost: " << t * 1.0/1000 << "ms";
+  LOG(ERROR) << "vector pool total cost: " << t * 1.0/1000 << "ms";
 
   MemoryPool2<struct A> pool2(200000);
-  vec.clear();
-  vec.reserve(200000);
   t = 0;
   t -= ::toft::GetTimeStampInUs();
+  pool2.Init();
   for (int i = 200000; i > 0; --i) {
-    vec.push_back(pool2.Alloc());
-  }
-  for (auto it = vec.begin(); it != vec.end(); ++it) {
-    pool2.DeAlloc(*it);
+    p = pool2.Alloc();
   }
   t += ::toft::GetTimeStampInUs();
-  LOG(ERROR) << "total cost: " << t * 1.0/1000 << "ms";
+  LOG(ERROR) << "stack pool total cost: " << t * 1.0/1000 << "ms";
+  LOG(ERROR) << "p: " << p;
 
+  std::vector<struct A*> vec;
+  vec.reserve(200000);
   vec.clear();
   t = 0;
   t -= ::toft::GetTimeStampInUs();
@@ -114,7 +115,7 @@ TEST(TEST, MemoryPoolTest) {
     delete *it;
   }
   t += ::toft::GetTimeStampInUs();
-  LOG(ERROR) << "total cost: " << t * 1.0/1000 << "ms";
+  LOG(ERROR) << "no pool total cost: " << t * 1.0/1000 << "ms";
 }
 
 TEST(TEST, VectorTest) {
@@ -126,7 +127,7 @@ TEST(TEST, VectorTest) {
   }
   vec.resize(0);
   t += ::toft::GetTimeStampInUs();
-  LOG(ERROR) << "total cost: " << t * 1.0/1000 << "ms";
+  LOG(ERROR) << "Don't reserve total cost: " << t * 1.0/1000 << "ms";
 
   t = 0;
   vec.reserve(200000);
@@ -135,7 +136,7 @@ TEST(TEST, VectorTest) {
     vec.push_back(0);
   }
   t += ::toft::GetTimeStampInUs();
-  LOG(ERROR) << "total cost: " << t * 1.0/1000 << "ms";
+  LOG(ERROR) << "Reserve total cost: " << t * 1.0/1000 << "ms";
 }
 
 struct Ids {
